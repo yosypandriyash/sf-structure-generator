@@ -1,0 +1,287 @@
+commandConfiguration:
+  executor: Yosyp Andriyash
+
+  generativeOptions:
+    myProjectHexagonalStructure:
+      pathConfig:
+        outputPath: vendor/myProject/src/
+        rootNamespace: MyProject\
+        calculatePathNamespaceCommencingBy: my-project/src/
+        customMethodsClass:
+        templateDispatcherNamespace: ''
+        templatesFilesPath: ''
+
+      steps:
+        -
+          stepTitle: 'Context'
+          stepDescription: [
+            'Define context name, for example: Product',
+            'Words separated by space wanna be transformed to lower camel case result'
+          ]
+          stepOutputVarType: 'string'
+          stepOutputVarName: '_ContextName_'
+          stepOutputVarRegex: 'className'
+          stepOnInputEndCallback: ['toLowerCamelCase', 'checkDebugKeyWord', 'ucfirst']
+
+        -
+          stepTitle: 'SubContext'
+          stepDescription: 'Type your SubContext name, for example: Laptop'
+          stepOutputVarType: 'string'
+          stepOutputVarName: '_SubContextName_'
+          stepOutputVarRegex: 'className'
+          stepOnInputEndCallback: ['toLowerCamelCase', 'ucfirst']
+          stepOnDebug:
+            value: 'TestSubcontext'
+
+        -
+          stepTitle: 'SubContext Entity Name'
+          stepDescription: 'Type your SubContext Entity name, for example: CheapLaptop'
+          stepOutputVarType: 'string'
+          stepOutputVarName: '_DomainEntityName_'
+          stepOutputVarRegex: 'className'
+          stepOnInputEndCallback: ['toLowerCamelCase', 'ucfirst']
+          stepOnDebug:
+            value: 'TestEntityName'
+
+        -
+          stepTitle: 'Use-Case'
+          stepDescription: 'Define your use case, for example: "get cheap laptops by price"'
+          stepOutputVarType: 'string'
+          stepOutputVarName: '_UseCaseName_'
+          stepOutputVarRegex: 'className'
+          stepOnInputEndCallback: ['toLowerCamelCase', 'checkIssetGetSetOnUseCaseName(_DomainEntityName_)', 'ucfirst']
+          stepOnDebug:
+            value: 'GetTestPackageAction'
+
+        -
+          stepTitle: 'Use-Case type'
+          stepDescription: 'Define use-case type'
+          stepOutputVarType: 'int'
+          stepOutputVarName: 'packageApplicationActionType'
+          stepOutputAllowedOptions:
+            1: "Query"
+            2: "Command"
+          stepOutputVarRegex: '/^(1|2)$/'
+          stepOnDebug:
+            value: 2
+
+        -
+          stepTitle: ' %_DomainEntityName_% class properties'
+          executeConditions: '%packageApplicationActionType% === 1'
+          stepDescription: 'Define %_DomainEntityName_% class properties'
+          stepOutputVarName: 'packageDomainEntityAttributes'
+          stepOnBegin:
+            callback: ['classPropertiesNamesWizardCallback', 'classPropertiesTypesWizardCallback', 'cleanReturnIndexParam']
+            returnOnEnd: true
+          stepOnDebug:
+            value:
+              - name : 'id'
+                type : 'int'
+              - name: 'name'
+                type: 'string'
+              - name: 'surName'
+                type: 'string'
+        -
+          stepTitle: 'Query service method properties'
+          executeConditions: '%packageApplicationActionType% === 1'
+          stepDescription: 'Define your Query type service method properties'
+          stepOutputVarName: 'packageApplicationActionReadQueryParams'
+          stepOnBegin:
+            callback: 'getBoolUserResponseByYesOrNotStep(packageDomainEntityAttributes)'
+            returnOnEnd: true
+          stepOnDebug:
+            value:
+              - name: 'id'
+                type: 'int'
+              - name: 'name'
+                type: 'string'
+              - name: 'surName'
+                type: 'string'
+
+        -
+          stepTitle: 'Query response'
+          executeConditions: '%packageApplicationActionType% === 1'
+          stepDescription: 'Is the response of the application query a data collection (entities array)?'
+          stepOutputVarType: 'int'
+          stepOutputVarName: 'packageApplicationActionReadResponseIsCollection'
+          stepOutputAllowedOptions:
+            1: "yes"
+            2: "no"
+          stepOutputVarRegex: '/^(1|2)$/'
+          stepOnDebug:
+            value: 1
+
+        -
+          stepTitle: 'Command arguments'
+          executeConditions: '%packageApplicationActionType% === 2'
+          stepDescription: 'Do you want to add command arguments? (command with empty arguments as default)'
+          stepOutputVarType: 'int'
+          stepOutputVarName: 'packageApplicationActionCommandHasCustomArguments'
+          stepOutputAllowedOptions:
+            1: "yes"
+            0: "no"
+          stepOutputVarRegex: '/^(1|2)$/'
+          stepOnDebug:
+            value: 1
+
+        -
+          executeConditions: [
+            '%packageApplicationActionType% === 2',
+            '%packageApplicationActionCommandHasCustomArguments% === 1'
+          ]
+          stepDescription: 'Define command params/arguments'
+          stepOutputVarName: 'packageApplicationActionCommandCustomArguments'
+          stepOnBegin:
+            callback: ['classPropertiesNamesWizardCallback', 'classPropertiesTypesWizardCallback', 'cleanReturnIndexParam']
+            returnOnEnd: true
+          stepOnDebug:
+            value:
+              - name: 'id'
+                type: 'int'
+              - name: 'name'
+                type: 'string'
+              - name: 'surName'
+                type: 'string'
+
+        -
+          stepTitle: 'Command response entity properties'
+          executeConditions: '%packageApplicationActionType% === 2'
+          stepDescription: 'Define %_DomainEntityName_% response entity attributes'
+          stepOutputVarName: 'packageDomainEntityAttributes'
+          stepOnBegin:
+            callback: [ 'classPropertiesNamesWizardCallback', 'classPropertiesTypesWizardCallback', 'cleanReturnIndexParam' ]
+            returnOnEnd: true
+          stepOnDebug:
+            value:
+              - name: 'id'
+                type: 'int'
+              - name: 'name'
+                type: 'string'
+              - name: 'surName'
+                type: 'string'
+
+      templates:
+        -
+          id: 'read_query_query'
+          parseConditions: ['%packageApplicationActionType% === 1']
+          className: '%_UseCaseName_%'
+          outputPath: '%_ContextName_%/Model/Application/%_SubContextName_%/Read/%_UseCaseName_%/'
+          template: 'ApplicationReadQuery.template.php'
+          suffix: 'Query'
+          templateClassDispatcher: 'ApplicationReadQueryTemplate'
+          dependencies: []
+          use: []
+          implements: [
+            'SoftwareArchitecture\ModelLayer\ApplicationLayer\ApplicationServiceRequest'
+          ]
+
+        -
+          id: 'read_query_response'
+          parseConditions: ['%packageApplicationActionType% === 1']
+          className: '%_UseCaseName_%'
+          outputPath: '%_ContextName_%/Model/Application/%_SubContextName_%/Read/%_UseCaseName_%/'
+          template: 'ApplicationReadResponse.template.php'
+          suffix: 'Response'
+          templateClassDispatcher: 'ApplicationReadResponseTemplate'
+          dependencies: []
+          use: []
+          implements: [
+            'SoftwareArchitecture\ModelLayer\ApplicationLayer\ApplicationServiceResponse'
+          ]
+
+        -
+          id: 'read_query_service'
+          parseConditions: ['%packageApplicationActionType% === 1']
+          className: '%_UseCaseName_%'
+          outputPath: '%_ContextName_%/Model/Application/%_SubContextName_%/Read/%_UseCaseName_%/'
+          template: 'ApplicationReadService.template.php'
+          suffix: 'Service'
+          templateClassDispatcher: 'ApplicationReadServiceTemplate'
+          dependencies: ['ApplicationReadQueryTemplate', 'ApplicationReadResponseTemplate', 'DomainEntityServiceTemplate', 'DomainEntityRepositoryTemplate']
+          use: [
+            'SoftwareArchitecture\ModelLayer\ApplicationLayer\ApplicationServiceRequest',
+            'SoftwareArchitecture\ModelLayer\ApplicationLayer\ApplicationServiceResponse'
+          ]
+
+        -
+          id: 'command_command_command'
+          parseConditions: ['%packageApplicationActionType% === 2']
+          className: '%_UseCaseName_%'
+          outputPath: '%_ContextName_%/Model/Application/%_SubContextName_%/Command/%_UseCaseName_%/'
+          template: 'ApplicationCommandCommand.template.php'
+          suffix: 'Command'
+          templateClassDispatcher: 'ApplicationCommandCommandTemplate'
+          dependencies: []
+          use: []
+          implements: [
+            'SoftwareArchitecture\ModelLayer\ApplicationLayer\ApplicationServiceRequest'
+          ]
+
+        -
+          id: 'command_command_response'
+          parseConditions: ['%packageApplicationActionType% === 2']
+          className: '%_UseCaseName_%'
+          outputPath: '%_ContextName_%/Model/Application/%_SubContextName_%/Command/%_UseCaseName_%/'
+          template: 'ApplicationCommandResponse.template.php'
+          suffix: 'Response'
+          templateClassDispatcher: 'ApplicationCommandResponseTemplate'
+          dependencies: []
+          use: []
+          implements: [
+            'SoftwareArchitecture\ModelLayer\ApplicationLayer\ApplicationServiceResponse'
+          ]
+
+        -
+          id: 'command_command_service'
+          parseConditions: ['%packageApplicationActionType% === 2']
+          className: '%_UseCaseName_%'
+          outputPath: '%_ContextName_%/Model/Application/%_SubContextName_%/Command/%_UseCaseName_%/'
+          template: 'ApplicationCommandService.template.php'
+          suffix: 'Service'
+          templateClassDispatcher: 'ApplicationCommandServiceTemplate'
+          dependencies: ['ApplicationCommandCommandTemplate', 'ApplicationCommandResponseTemplate', 'DomainEntityServiceTemplate', 'DomainEntityRepositoryTemplate']
+          use: [
+            'SoftwareArchitecture\ModelLayer\ApplicationLayer\ApplicationServiceRequest',
+            'SoftwareArchitecture\ModelLayer\ApplicationLayer\ApplicationServiceResponse'
+          ]
+
+        -
+          id: 'domain_repository_interface'
+          className: '%_SubContextName_%'
+          outputPath: '%_ContextName_%/Model/Infrastructure/%_SubContextName_%/Repository/'
+          template: 'DomainEntityRepository.template.php'
+          suffix: 'Repository'
+          templateClassDispatcher: 'DomainEntityRepositoryTemplate'
+          dependencies: ['DomainEntityTemplate', 'DomainEntityCollectionTemplate']
+          use: []
+
+        -
+          id: 'domain_service'
+          service:
+          className: '%_UseCaseName_%'
+          outputPath: '%_ContextName_%/Model/Domain/%_SubContextName_%/Service/'
+          template: 'DomainEntityService.template.php'
+          suffix: 'DomainService'
+          templateClassDispatcher: 'DomainEntityServiceTemplate'
+          dependencies: ['DomainEntityRepositoryTemplate', 'DomainEntityTemplate']
+          use: []
+
+        -
+          id: 'domain_entity'
+          className: '%_DomainEntityName_%'
+          outputPath: '%_ContextName_%/Model/Domain/%_SubContextName_%/Model/'
+          template: 'DomainEntity.template.php'
+          suffix: ''
+          templateClassDispatcher: 'DomainEntityTemplate'
+          dependencies: []
+          use: []
+
+        -
+          id: 'domain_entity_collection'
+          className: '%_DomainEntityName_%'
+          outputPath: '%_ContextName_%/Model/Domain/%_SubContextName_%/Model/'
+          template: 'DomainEntityCollection.template.php'
+          suffix: 'Collection'
+          templateClassDispatcher: 'DomainEntityCollectionTemplate'
+          dependencies: []
+          use: []

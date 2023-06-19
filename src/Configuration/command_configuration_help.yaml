@@ -1,0 +1,77 @@
+commandConfigurationHelp:
+
+  commandConfiguration:
+    executor: Executor name
+
+    generativeOptions:
+      generativeLayout1:
+
+      generativeLayout2:
+      pathConfig:
+        rootPath: 'path from vendor to src path where files will be created: f.ex (CC): "vendor/myProject/src/"'
+        rootNamespace: 'root namespace vomenving by (CC): "MyProject\"'
+        calculatePathNamespaceCommencingBy: 'calculate namesace using this string: (CC): project/src/'
+
+      steps:
+        - 'steps (check help below)'
+
+      templates:
+        - 'templates (check help below)'
+
+  stepAvailableConfig:
+
+    executeConditions: '(string|array): conditions that must be passed to execute current step'
+    stepTitle: '(string): Step title'
+    stepDescription: '(string|array): Step description'
+    stepExtendedDescription: '(string): Advanced step description. Usar ? para ver'
+    stepOutputVarType: '(string): step output value type [string, int, float]'
+    stepOutputVarName: '(string): step output var name. f.ex: "_ContextName_"'
+    stepOutputAllowedOptions: '(?array): step allowed var options f.ex: [y: "yes", n: "no"]'
+    stepOutputVarRegex: '(string): step output value validation regex'
+    stepOnInputEndCallback: '(string|array): step output variable modification method'
+    stepOnBegin: '(?array): step on begin options [callback: "custom method call"]'
+    stepOnEnd: '(?array): step on end options [callback: "custom method call"]'
+    stepOnDebug: '(?array): step on debug options [callback: "custom method call", value: "custom fixed value on debug mode"]'
+
+    example:
+      -
+        executeConditions: [
+          '%previousVariableValue% === 100'
+          'rand(0,100) > 50'
+        ]
+        stepTitle: 'Title'
+        stepDescription: 'Step description'
+        stepExtendedDescription: 'extended description, use ? as response to show it'
+        stepOutputVarType: 'string'
+        stepOutputVarName: 'outputVariableName'
+        stepOutputAllowedOptions: [
+          1: "option 1",
+          2: "option 2"
+        ]
+        stepOutputVarRegex: '/^(allowed1|allowed2)\/[a-zA-Z]{1,5}$/'
+        stepOnInputEndCallback: ['classMethod', 'phpNativeFunctions']
+        stepOnBegin:
+          callback: ''
+        stepOnEnd:
+          callback: ''
+        stepOnDebug:
+          value: '1'
+          callback: 'myDebugCallbackValue'
+
+  templateAvailableConfig:
+    id: 'used just for be recognized by dev, not used anywhere in generation process'
+    parseConditions: [ 'conditions that must be passed to render and create this template output' ]
+    className: 'FileName and class name, can use %helpers% to parse stored user names'
+    outputPath: 'path where the file gonna be created: from config.generativeLayout.pathConfig.rootPath + %var1%/Model/Path2/%var2%/OtherPath/%var3%/'
+    template: 'Template file: Templates/Files/ApplicationReadQuery.template.php'
+    suffix: 'ClassName & File added suffix: "Query" result MyClassQuery.php'
+    templateClassDispatcher: 'Template class parser: F.ex: ApplicationReadQueryTemplate'
+    dependencies: [
+      'F. ex: SoftwareArchitecture\ModelLayer\ApplicationLayer\Dependency1'
+    ]
+    use: [
+      'Added in the use context: SoftwareArchitecture\ModelLayer\ApplicationLayer\OtherClass used in generated output'
+    ]
+    implements: [
+      'F. ex: SoftwareArchitecture\ModelLayer\ApplicationLayer\ApplicationServiceRequestImplementation -> "MyClass Implements ApplicationServiceRequestImplementation"'
+    ]

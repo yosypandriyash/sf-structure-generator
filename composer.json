@@ -1,0 +1,33 @@
+{
+  "name": "yosypandriyash/sf-structure-generator",
+  "type": "command",
+  "description": "Create simple and basic hexagonal structure in few seconds, for symfony 5+ framework",
+  "keywords": ["symfony5", "hexagonal", "command-generator"],
+  "homepage": "https://github.com/yosypandriyash/sf-structure-generator",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Yosyp-Andriyash",
+      "homepage": "http://yosyp.andriyash.com/",
+      "role": "Developer"
+    }
+  ],
+  "support": {
+    "issues": "https://github.com/yosypandriyash/sf-structure-generator/issues",
+    "source": "https://github.com/yosypandriyash/sf-structure-generator"
+  },
+  "config": {
+    "optimize-autoloader": true,
+    "preferred-install": {
+      "*": "dist"
+    }
+  },
+  "autoload": {
+    "psr-4": {
+      "YosypAndriyash\\SfStructureGenerator\\": "src/"
+      }
+    },
+  "require": {
+
+  }
+}
